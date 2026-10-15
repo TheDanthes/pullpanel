@@ -84,6 +84,7 @@ function dateStr(ts) {
   return new Date(t).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" });
 }
 const unitTxt = { m: "min", h: "h", d: "días" };
+const everyTxt = (a) => `${a.every} ${a.unit === "d" && a.every === 1 ? "día" : unitTxt[a.unit]}`;
 const STATUS = {
   uptodate: "Al día",
   available: "Versión nueva disponible",
@@ -192,7 +193,7 @@ function entryCard(e) {
   }).join("") || `<span class="chip missing">Sin contenedores asociados (solo pull)</span>`;
 
   const auto = e.auto && e.auto.enabled
-    ? `<span>Automático: <b>cada ${e.auto.every} ${unitTxt[e.auto.unit]}</b>${e.next_auto_at ? " · próximo " + until(e.next_auto_at) : ""}</span>`
+    ? `<span>Automático: <b>cada ${everyTxt(e.auto)}</b>${e.next_auto_at ? " · próximo " + until(e.next_auto_at) : ""}</span>`
     : `<span>Automático: <b>no</b></span>`;
   const checkErr = e.last_check_error ? `<span class="error">Último chequeo falló: ${esc(e.last_check_error)}</span>` : "";
 

@@ -15,6 +15,22 @@ Elegís qué contenedores controla y desde el navegador:
 
 Cada imagen se maneja por separado: su propio botón, su propio automático y su propio registro.
 
+## Capturas
+
+**Actualizaciones** — una tarjeta por imagen, con estado, acciones y el registro de la última tarea.
+
+![Pantalla de actualizaciones](docs/screenshots/actualizaciones.png)
+
+**Agregar una imagen** — elegís el contenedor, la imagen se completa sola y opcionalmente activás el modo automático.
+
+![Diálogo para agregar una imagen](docs/screenshots/agregar.png)
+
+**Limpieza** — imágenes del equipo, las versiones viejas marcadas “sin tag” y borrado individual o por selección.
+
+![Pantalla de limpieza de imágenes](docs/screenshots/limpieza.png)
+
+<sub>Capturas con datos de ejemplo.</sub>
+
 ## 1. Publicar la imagen en GitHub (una sola vez)
 
 1. En GitHub creá un repo **público** llamado `pullpanel` (así la imagen y el ícono quedan públicos).
