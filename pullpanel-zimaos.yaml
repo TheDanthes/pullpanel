@@ -1,0 +1,66 @@
+name: pullpanel
+services:
+  pullpanel:
+    image: ghcr.io/thedanthes/pullpanel:latest
+    container_name: pullpanel
+    restart: unless-stopped
+    ports:
+      - target: 8790
+        published: "8790"
+        protocol: tcp
+    environment:
+      PULLPANEL_PASSWORD: cambiar-esta-clave
+      TZ: America/Argentina/Buenos_Aires
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+      - type: bind
+        source: /DATA/AppData/pullpanel/data
+        target: /data
+    x-casaos:
+      envs:
+        - container: PULLPANEL_PASSWORD
+          description:
+            en_us: Password to log into the web panel
+            es_es: Contraseña para entrar al panel web
+        - container: TZ
+          description:
+            en_us: Time zone
+            es_es: Zona horaria
+      ports:
+        - container: "8790"
+          description:
+            en_us: Web UI
+            es_es: Interfaz web
+      volumes:
+        - container: /var/run/docker.sock
+          description:
+            en_us: Docker socket (required to pull images and recreate containers)
+            es_es: Socket de Docker (necesario para hacer pull y recrear contenedores)
+        - container: /data
+          description:
+            en_us: Settings, watched images and registry credentials
+            es_es: Configuración, imágenes vigiladas y credenciales de registros
+
+x-casaos:
+  architectures:
+    - amd64
+  main: pullpanel
+  author: Danthes
+  developer: Danthes
+  category: Utilities
+  icon: https://raw.githubusercontent.com/thedanthes/pullpanel/main/app/static/icon.svg
+  index: /
+  port_map: "8790"
+  scheme: http
+  store_app_id: pullpanel
+  title:
+    en_us: PullPanel
+    es_es: PullPanel
+  tagline:
+    en_us: Update your Docker images with one click
+    es_es: Actualizá tus imágenes Docker con un botón
+  description:
+    en_us: Pick the containers you want to keep up to date, then check, pull and recreate them from the browser — manually or on a schedule. Includes an image cleanup list.
+    es_es: Elegí los contenedores que querés mantener al día y chequealos, hacé pull y recrealos desde el navegador, a mano o cada cierto tiempo. Incluye una lista para limpiar imágenes viejas.

@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PullPanel</title>
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- Login -->
+<section id="login" class="login" hidden>
+  <form id="login-form" class="login-card">
+    <img src="/static/icon.svg" alt="" width="48" height="48">
+    <h1>PullPanel</h1>
+    <p class="muted" id="login-msg">Ingresá la contraseña definida en el compose.</p>
+    <input type="password" id="login-pass" placeholder="Contraseña" autocomplete="current-password" required>
+    <button class="btn primary" type="submit">Entrar</button>
+    <p class="error" id="login-error" hidden></p>
+  </form>
+</section>
+
+<!-- App -->
+<div id="app" hidden>
+  <header class="topbar">
+    <div class="brand"><img src="/static/icon.svg" alt="" width="28" height="28"><span>PullPanel</span></div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="entries">Actualizaciones</button>
+      <button class="tab" data-tab="images">Limpieza</button>
+      <button class="tab" data-tab="settings">Ajustes</button>
+    </nav>
+    <button class="btn ghost small" id="logout" title="Cerrar sesión">Salir</button>
+  </header>
+
+  <main>
+    <div id="docker-error" class="banner error" hidden></div>
+
+    <!-- Actualizaciones -->
+    <section data-panel="entries">
+      <div class="toolbar">
+        <div>
+          <h2>Imágenes que controlás</h2>
+          <p class="muted">Cada una se chequea, descarga y aplica por separado.</p>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn" id="check-all">Chequear todas</button>
+          <button class="btn primary" id="add-entry">+ Agregar</button>
+        </div>
+      </div>
+      <div id="entries" class="entries"></div>
+      <div id="entries-empty" class="empty" hidden>
+        <p><strong>Todavía no agregaste ninguna imagen.</strong></p>
+        <p class="muted">Tocá “+ Agregar”, elegí el contenedor (por ejemplo jsdr-api) y listo.</p>
+      </div>
+    </section>
+
+    <!-- Limpieza -->
+    <section data-panel="images" hidden>
+      <div class="toolbar">
+        <div>
+          <h2>Imágenes en el equipo</h2>
+          <p class="muted">Las que no usa ningún contenedor se pueden borrar. Las versiones viejas quedan “sin tag”.</p>
+        </div>
+        <div class="toolbar-actions">
+          <label class="check"><input type="checkbox" id="only-unused" checked> Solo sin uso</label>
+          <button class="btn danger" id="delete-selected" disabled>Borrar seleccionadas</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="images">
+          <thead><tr>
+            <th class="col-check"><input type="checkbox" id="select-all" aria-label="Seleccionar todas"></th>
+            <th>Imagen</th><th>Estado</th><th class="num">Tamaño</th><th>Creada</th><th></th>
+          </tr></thead>
+          <tbody id="images-body"></tbody>
+        </table>
+      </div>
+      <p class="muted small" id="images-summary"></p>
+    </section>
+
+    <!-- Ajustes -->
+    <section data-panel="settings" hidden>
+      <div class="toolbar">
+        <div>
+          <h2>Registros privados</h2>
+          <p class="muted">Solo hace falta si alguna imagen es privada. Para ghcr.io: tu usuario de GitHub y un token (classic) con permiso <code>read:packages</code>.</p>
+        </div>
+      </div>
+      <div id="registries" class="registries"></div>
+      <div class="row-actions">
+        <button class="btn" id="add-registry">+ Agregar registro</button>
+        <button class="btn primary" id="save-settings">Guardar</button>
+        <span class="muted small" id="settings-saved" hidden>Guardado ✓</span>
+      </div>
+      <h2 class="mt">Sistema</h2>
+      <dl class="info" id="sys-info"></dl>
+    </section>
+  </main>
+</div>
+
+<!-- Modal entrada -->
+<dialog id="entry-dialog">
+  <form id="entry-form" method="dialog">
+    <h2 id="entry-title">Agregar imagen</h2>
+
+    <label class="field">
+      <span>Contenedores que usan esta imagen</span>
+      <div id="container-picker" class="picker"></div>
+      <small class="muted">Al actualizar se recrean con la imagen nueva, conservando puertos, volúmenes y variables.</small>
+    </label>
+
+    <label class="field">
+      <span>Imagen</span>
+      <input id="f-image" required placeholder="ghcr.io/thedanthes/jsdr-api:latest">
+    </label>
+
+    <label class="field">
+      <span>Nombre</span>
+      <input id="f-name" placeholder="jsdr-api">
+    </label>
+
+    <label class="check"><input type="checkbox" id="f-recreate" checked> Recrear los contenedores después del pull</label>
+
+    <fieldset class="auto">
+      <label class="check"><input type="checkbox" id="f-auto"> Actualizar automáticamente</label>
+      <div class="auto-row">
+        <span>cada</span>
+        <input type="number" id="f-every" min="1" value="6">
+        <select id="f-unit">
+          <option value="m">minutos</option>
+          <option value="h" selected>horas</option>
+          <option value="d">días</option>
+        </select>
+      </div>
+      <small class="muted">Chequea el registro y solo descarga y recrea si hay versión nueva. Mínimo 5 minutos.</small>
+    </fieldset>
+
+    <p class="error" id="entry-error" hidden></p>
+    <div class="dialog-actions">
+      <button class="btn ghost" value="cancel" formnovalidate>Cancelar</button>
+      <button class="btn primary" id="entry-save" value="save">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Confirmación -->
+<dialog id="confirm-dialog">
+  <form method="dialog">
+    <p id="confirm-text"></p>
+    <div class="dialog-actions">
+      <button class="btn ghost" value="no">Cancelar</button>
+      <button class="btn danger" value="yes" id="confirm-yes">Confirmar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" hidden></div>
+<script src="/static/app.js"></script>
+</body>
+</html>
